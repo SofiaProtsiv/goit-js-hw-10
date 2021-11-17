@@ -16,11 +16,11 @@ function onInput (event) {
   if(value.length === 0){
     refs.countryList.innerHTML = '';
     refs.countryCard.innerHTML = '';
-  }
+  } 
 
   fetchCountry(value)
     .then((country) => {
-      if(country.length > 10 || value.length === 0) {
+      if(country.length > 10) {
         refs.countryList.innerHTML = '';
         return Notiflix.Notify.info("Too many matches found. Please enter a more specific name.");
       }
