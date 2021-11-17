@@ -1,72 +1,48 @@
 import Notiflix from 'notiflix';
 import debounce from 'lodash.debounce';
+import fetchCountry from './fetchCountries'
+import previewCard from '../templates/previewCard.hbs'
+import countryList from '../templates/countryList.hbs'
+import getRefs from './getRefs';
 import '../css/styles.css';
 
 
-const DEBOUNCE_DELAY = 300;
-const countryList = document.querySelector(".country-list");
-const countryCard = document.querySelector(".country-info");
-const input = document.querySelector("#search-box");
-
-input.addEventListener("input", debounce(onInput, 300));
+const refs = getRefs();
+refs.input.addEventListener("input", debounce(onInput, refs.DEBOUNCE_DELAY));
 
 function onInput (event) {
   event.preventDefault();
   const value = event.target.value.trim();
+  if(value.length === 0){
+    refs.countryList.innerHTML = '';
+    refs.countryCard.innerHTML = '';
+  }
 
-    fetchCountry(value)
+  fetchCountry(value)
     .then((country) => {
-      if(country.length > 10) {
+      if(country.length > 10 || value.length === 0) {
+        refs.countryList.innerHTML = '';
         return Notiflix.Notify.info("Too many matches found. Please enter a more specific name.");
       }
       if (2 <= country.length <= 10) {
         renderCountryList(country);
-        countryCard.innerHTML = '';
+        refs.countryCard.innerHTML = '';
       } 
       if(country.length === 1){
         renderCountryCard(country);
-        countryList.innerHTML = '';
+        refs.countryList.innerHTML = '';
       }
     })
+    .catch((error) => {
+      refs.countryList.innerHTML = '';
+      return Notiflix.Notify.failure("Oops, there is no country with that name");
+    })
   };
-
-
-function fetchCountry(countryName) {
-    return fetch (`https://restcountries.com/v3.1/name/${countryName}`).then(
-          (response) => {
-        if (!response.ok) {
-          Notiflix.Notify.failure("Oops, there is no country with that name");
-        }
-        return response.json();
-      }
-    );
-  }
-          
+        
 function renderCountryList(country) {
-  const markup = country
-    .map((country) => {
-      return `<li>
-        <img class="countryFlag" src="${country.flags.png}" alt="${country.name.common}">
-        <p class="countryName">${country.name.common}</p>
-        </li>`;
-      })
-    .join("");
-  countryList.innerHTML = markup;
+  refs.countryList.innerHTML = countryList(country);
 }
 
 function renderCountryCard(country) {
-  const markup = country
-    .map((country) => {
-      return `
-        <div class="previewCard">
-          <img class="countryFlag" src="${country.flags.png}" alt="${country.name.common}">
-          <p class="countryName">${country.name.common}</p>
-        </div>
-        <p class="countryCapital"><b>Capital:</b> ${country.capital}</p>
-        <p class="countryPopulation"><b>Population:</b> ${country.population}</p>
-        <p class="countryLanguages"><b>Languages:</b> ${Object.values(country.languages)}</p>
-        `;
-      })
-    .join("");
-    countryCard.innerHTML = markup;
+    refs.countryCard.innerHTML =  previewCard(country);
 }

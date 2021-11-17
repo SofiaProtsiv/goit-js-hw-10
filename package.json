@@ -28,6 +28,7 @@
   "dependencies": {
     "@vimeo/player": "^2.16.1",
     "c": "^1.1.1",
+    "hbs": "^4.2.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "notiflix": "^3.2.2",
